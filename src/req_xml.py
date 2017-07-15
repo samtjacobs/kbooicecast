@@ -24,12 +24,12 @@ def authenticated_req(url, usr, pw):
     # create "opener" (OpenerDirector instance)
     return urllib.request.build_opener(handler)
 
-    # use the opener to fetch a URL
-    #opener.open(a_url)
 
-    # Install the opener.
-    # Now all calls to urllib.request.urlopen use our opener.
-    #urllib.request.install_opener(opener)
+def get_mounts(opener, top_level):
+    mount_pg = opener.open(top_level + '/listmounts')
+    mount_html = mount_pg.read().decode('utf-8')
+    xml = ElementTree.fromstring(mount_html)
+    return [child.attrib['mount'] for child in xml]
 
 
 def main():
@@ -39,14 +39,9 @@ def main():
     pw = config_xml.find('authentication/admin-password').text
     top_level = LOCAL + ":" + PORT + "/admin"
     opener = authenticated_req(top_level, usr, pw)
-    # get list of mounts
-    mount_pg = opener.open(top_level + '/listmounts')
-    mount_html = mount_pg.read().decode('utf-8')
-    xml = ElementTree.ElementTree(mount_html)
-    mounts = xml.getroot().find('icestats')
-    print(mounts)
-    # Request stats
 
+    # get list of mounts
+    mounts = get_mounts(opener, top_level)
 
 
 if __name__ == "__main__":
